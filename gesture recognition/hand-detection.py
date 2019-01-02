@@ -9,7 +9,10 @@ background is calibrated initially which is persistant
 """
 #global variables
 bg = None
-
+frames = []
+frame_count = 50
+for i in range(0,frame_count+1):
+    frames.append(0)
 #-------------------------------------------------------------------------------
 # Function - To find the running average over the background
 #-------------------------------------------------------------------------------
@@ -49,13 +52,20 @@ def segment(image, threshold=25):
         # based on contour area, get the maximum contour which is the hand
         segmented = max(cnts, key=cv2.contourArea)
         return (thresholded, segmented)
-
+#-------------------------------------------------------------------------------
+# Frame buffer
+#-------------------------------------------------------------------------------
+def frame_buffer(frame):
+    for i in range(0,frame_count-1):
+        frames[i]=frames[i+1]
+    frames[frame_count]=frame
+    
 #-------------------------------------------------------------------------------
 # Main function
 #-------------------------------------------------------------------------------
 if __name__ == "__main__":
     # initialize weight for running average
-    aWeight = 0.5
+    aWeight = 0.00001
 
     # get the reference to the webcam
     camera = cv2.VideoCapture(0)
@@ -65,6 +75,7 @@ if __name__ == "__main__":
 
     # initialize num of frames
     num_frames = 0
+    initial =True
 
     # keep looping, until interrupted
     while(True):
@@ -72,7 +83,7 @@ if __name__ == "__main__":
         (grabbed, frame) = camera.read()
 
         # resize the frame
-        frame = imutils.resize(frame, width=700)
+        #frame = imutils.resize(frame, width=700)
 
         # flip the frame so that it is not the mirror view
         frame = cv2.flip(frame, 1)
@@ -92,12 +103,26 @@ if __name__ == "__main__":
 
         # to get the background, keep looking till a threshold is reached
         # so that our running average model gets calibrated
-        if num_frames < 30:
-            run_avg(gray, aWeight)
+        if num_frames == frame_count:
+            bg = None
+            num_frames = 0
+            for i in frames:
+                run_avg(gray, aWeight)
+        if initial == True:
+            for i in range(0,frame_count):
+                frame_buffer(gray)
+            for i in frames:
+                run_avg(gray, aWeight)
+            initial = False
         else:
             # segment the hand region
             hand = segment(gray)
 
+            #add frame to buffer
+            frame_buffer(gray)
+
+            #calculate our running average model gets calibrated
+                
             # check whether hand region is segmented
             if hand is not None:
                 # if yes, unpack the thresholded image and
