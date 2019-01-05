@@ -1,0 +1,3 @@
+title=AWT
+author=Athuldevin
+orientation=portrait

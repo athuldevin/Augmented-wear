@@ -13,8 +13,26 @@ from kivy.app import App
 from functools import partial
 from copy import copy
 from kivy.core.window import Window
-Window.fullscreen = 'auto'
+import cam
+import threading
 
+
+class myThread (threading.Thread):
+   def __init__(self, threadID, name, counter):
+      threading.Thread.__init__(self)
+      self.threadID = threadID
+      self.name = name
+      self.counter = counter
+   def run(self):
+      cam.main()
+
+# Create new threads
+thread1 = myThread(1, "Thread-1", 1)
+
+# Start new Threads
+thread1.start()
+
+Window.fullscreen = 'auto'
 KV = '''
 #:import pi math.pi
 #:import cos math.cos
@@ -75,7 +93,7 @@ KV = '''
 
 def dist(x,y):
     (x1, y1),(x2,y2)=x,y
-    return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 5
+    return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
 
 
 class ModernMenuLabel(ButtonBehavior, Label):
@@ -165,7 +183,7 @@ class ModernMenu(Widget):
 
 
 class MenuSpawner(Widget):
-    timeout = NumericProperty(.1)
+    timeout = NumericProperty(0)
     menu_cls = ObjectProperty(ModernMenu)
     cancel_distance = NumericProperty(10)
     menu_args = DictProperty({})
@@ -242,7 +260,7 @@ class ModernMenuApp(App):
         print ("test 4")
         args[0].parent.open_submenu(
             choices=[
-                dict(text='hey', index=1, callback=self.callback2),
+                dict(text='hai', index=1, callback=self.callback2),
                 dict(text='oh', index=2, callback=self.callback2),
             ])
 
