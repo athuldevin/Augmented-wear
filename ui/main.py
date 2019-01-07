@@ -11,28 +11,21 @@ from kivy.properties import (
 from kivy.app import App
 
 from functools import partial
+import cv2
+import numpy as np
+import pyautogui
 from copy import copy
-from kivy.core.window import Window
 import cam
-import threading
+from kivy.core.window import Window
 
-
-class myThread (threading.Thread):
-   def __init__(self, threadID, name, counter):
-      threading.Thread.__init__(self)
-      self.threadID = threadID
-      self.name = name
-      self.counter = counter
-   def run(self):
-      cam.main()
-
-# Create new threads
-thread1 = myThread(1, "Thread-1", 1)
-
-# Start new Threads
-thread1.start()
-
+camera=cam.cam()
 Window.fullscreen = 'auto'
+'''Window.borderless=1
+Window.left=100
+Window.top=100
+
+Window.hieght=200
+'''
 KV = '''
 #:import pi math.pi
 #:import cos math.cos
@@ -41,7 +34,7 @@ KV = '''
 <ModernMenu>:
     canvas.before:
         Color:
-            rgba: 0, 0, .3, .4
+            rgba: 0, 0, .9, .2
         Ellipse:
             pos: self.center_x - self.radius, self.center_y - self.radius
             size: self.radius * 2, self.radius * 2
@@ -101,7 +94,7 @@ class ModernMenuLabel(ButtonBehavior, Label):
     radius = NumericProperty(100)
     siblings = NumericProperty(1)
     callback = ObjectProperty(None)
-
+    
     def on_parent(self, *args):
         if self.parent:
             self.parent.bind(children=self.update_siblings)
@@ -117,7 +110,7 @@ class ModernMenu(Widget):
     radius = NumericProperty(50)
     circle_width = NumericProperty(5)
     line_width = NumericProperty(2)
-    color = ListProperty([.3, .3, .3, 1])
+    color = ListProperty([.31, .573, .816, .9])
     circle_progress = NumericProperty(0)
     creation_direction = NumericProperty(1)
     creation_timeout = NumericProperty(1)
@@ -237,6 +230,7 @@ FloatLayout:
 
 class ModernMenuApp(App):
     def build(self):
+        Clock.schedule_interval(camera.frame,(1/10))
         return Builder.load_string(TESTAPP_KV)
 
     def callback1(self, *args):

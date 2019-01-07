@@ -1,4 +1,4 @@
-# python cam.py --filter HSV --webcam
+
 
 import cv2
 import argparse
@@ -44,16 +44,16 @@ def get_trackbar_values(range_filter):
 
 
 def main():
-    args = get_arguments()
+    #args = get_arguments()
 
-    range_filter = args['filter'].upper()
+    range_filter = 'HSV'
 
-    camera = cv2.VideoCapture(0)
+    camera = cv2.VideoCapture(1)
 
     setup_trackbars(range_filter)
 
     while True:
-        if args['webcam']:
+        if True:
             ret, image = camera.read()
 
             if not ret:
@@ -99,9 +99,10 @@ def main():
         # show the frame to our screen
         cv2.imshow("Original", image)
         cv2.imshow("Thresh", thresh)
-        cv2.imshow("Mask", mask)
+        #cv2.imshow("Mask", mask)
 
         if cv2.waitKey(1) & 0xFF is ord('q'):
+            print (get_trackbar_values(range_filter))
             break
 
 
