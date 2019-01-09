@@ -5,15 +5,17 @@ import pyautogui
 class cam():
 
     def __init__(self):
-        print ("init")
+        print ("cam initialized")
         self.range_filter = 'HSV'
         (self.screen_width,self.screen_height) = pyautogui.size()
-        self.camera = cv2.VideoCapture(1)
+        self.camera = cv2.VideoCapture(0)
         ret, image = self.camera.read()
+        if (not ret):
+            printf("cam error!")
+            pass
         (self.height,self.width) = image.shape[:2]
-        self.v1_min, self.v2_min, self.v3_min, self.v1_max, self.v2_max, self.v3_max = [0, 176, 79, 19, 255, 255]
-        self.x,self.y=(self.screen_width/2,self.screen_height/2)
-        self.click=True
+        self.v1_min, self.v2_min, self.v3_min, self.v1_max, self.v2_max, self.v3_max = [0, 103, 147, 19, 222, 255] #[0, 176, 79, 19, 255, 255]
+        self.items = [[0,0]] #queue
 
     def frame(self,*args):
         
@@ -34,36 +36,41 @@ class cam():
             # find the largest contour in the mask, then use
             # it to compute the minimum enclosing circle and
             # centroid
-            x1,y1=self.x,self.y
             c = max(cnts, key=cv2.contourArea)
             ((self.x, self.y), radius) = cv2.minEnclosingCircle(c)
             M = cv2.moments(c)
             center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
- 
+
+            #Store recent points in queue for calculating click or not
+            if (len(self.items)<7):
+                self.enqueue([int(self.x),int(self.y)])
+            else:
+                self.dequeue()
+                self.enqueue([int(self.x),int(self.y)])
+
+            #Avarage points of queue
+            x1,y1=self.avgPoint()
+                   
             # only proceed if the radius meets a minimum size
             if radius > 10:
                 # draw the circle and centroid on the frame,
                 # then update the list of tracked points
-                cv2.circle(image, (int(self.x), int(self.y)), int(radius),(0, 255, 255), 2)
-                c1=((int(x1)+int(self.x))*(self.screen_width/self.width))/2
-                c2=((int(y1)+int(self.y))*(self.screen_width/self.width))/2
+                #cv2.circle(image, (int(self.x), int(self.y)), int(radius),(0, 255, 255), 2)
+                #c1=((int(x1)+int(self.x))*(self.screen_width/self.width))/2
+                #c2=((int(y1)+int(self.y))*(self.screen_width/self.width))/2
                 c1,c2=self.setCursorPos(int(x1)*(self.screen_width/self.width),int(y1)*(self.screen_width/self.width),int(self.x)*(self.screen_width/self.width),int(self.y)*(self.screen_width/self.width))
-                if (self.dist(int(x1),int(y1),int(self.x),int(self.y))>5):
-                    self.click=True
-                #pyautogui.moveTo(int(x)*(screen_width/width), int(y)*(screen_height/height))
-                if self.click==True:
-                    pyautogui.click(c1,c2)
-                    self.click=False
-                else:
-                    #pyautogui.dragTo(int(x)*(screen_width/width), int(y)*(screen_height/height),(1/20), button='left')
+                if (self.dist(self.items[-2][0],self.items[-2][1],int(self.x),int(self.y))<5):
                     pyautogui.mouseDown(c1,c2, button='left')
+                #pyautogui.moveTo(int(x)*(screen_width/width), int(y)*(screen_height/height))
+                else:
+                    pyautogui.mouseUp(c1,c2, button='left')
+                    #pyautogui.dragTo(int(x)*(screen_width/width), int(y)*(screen_height/height),(1/20), button='left')
+                    
 
                 #cv2.circle(image, center, 3, (0, 0, 255), -1)
                 #cv2.putText(image,"centroid", (center[0]+10,center[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 255),1)
                 #cv2.putText(image,"("+str(center[0])+","+str(center[1])+")", (center[0]+10,center[1]+15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 255),1)
-        elif(self.click==False):
-            pyautogui.mouseUp(int(self.x)*(self.screen_width/self.width), int(self.y)*(self.screen_height/self.height), button='left')
-            self.click=True
+        
         # show the frame to our screen
         #cv2.imshow("Original", image)
         #cv2.imshow("Thresh", thresh)
@@ -80,9 +87,21 @@ class cam():
             yp[1] = yc1 + .1*(pyp1-yc1)
         
         return yp[0],yp[1]
-    
+
+    def enqueue(self, item):
+        self.items.insert(0,item)
+
+    def dequeue(self):
+        return self.items.pop()
+
+    def avgPoint(self):
+        a,b=0,0
+        for x,y in self.items:
+            a=a+x
+            b=b+y
+        return a/len(self.items),b/len(self.items)
 
 if __name__ == '__main__':
     a=cam()
-    while(True):
-        cam.frame(a)
+    while True:
+        a.frame()

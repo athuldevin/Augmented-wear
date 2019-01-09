@@ -48,7 +48,7 @@ def main():
 
     range_filter = 'HSV'
 
-    camera = cv2.VideoCapture(1)
+    camera = cv2.VideoCapture(0)
 
     setup_trackbars(range_filter)
 
