@@ -1,22 +1,20 @@
-'''A round menu that appears on a long touch
-'''
-from kivy.uix.widget import Widget
-from kivy.uix.label import Label
-from kivy.uix.behaviors import ButtonBehavior
-from kivy.lang import Builder
-from kivy.clock import Clock
-from kivy.animation import Animation
-from kivy.properties import (
-    NumericProperty, ListProperty, ObjectProperty, DictProperty)
-from kivy.app import App
-
-from functools import partial
 import cv2
-import numpy as np
-import pyautogui
-from copy import copy
 import cam
+import pyautogui
+import numpy as np
+from copy import copy
+from kivy.app import App
+from kivy.clock import Clock
+from functools import partial
+from kivy.lang import Builder
+from kivy.uix.label import Label
+from kivy.uix.widget import Widget
 from kivy.core.window import Window
+from kivy.animation import Animation
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.screenmanager import ScreenManager,Screen,FadeTransition
+from kivy.properties import NumericProperty, ListProperty, ObjectProperty, DictProperty
+
 
 camera=cam.cam()
 Window.fullscreen = 'auto'
@@ -154,7 +152,7 @@ class ModernMenu(Widget):
         ):
             self.parent.remove_widget(self)
 
-        return super(ModernMenu, self).on_touch_move(touch, *args)
+        return True
 
     def on_touch_up(self, touch, *args):
         if (
@@ -163,7 +161,7 @@ class ModernMenu(Widget):
             self.circle_progress < 1
         ):
             self.parent.remove_widget(self)
-        return super(ModernMenu, self).on_touch_up(touch, *args)
+        return True
 
     def dismiss(self):
         a = Animation(opacity=0)
@@ -205,33 +203,26 @@ class MenuSpawner(Widget):
         self.add_widget(menu)
         menu.start_display(touch)
 
+class Calculator(Screen):
+    Builder.load_file("kv/calc.kv")
 
-Builder.load_string(KV)
-
-TESTAPP_KV = '''
-FloatLayout:
+class Home(Screen):
+    Builder.load_file("kv/home.kv")
     
-    MenuSpawner:
-        timeout: .5
-        menu_args:
-            dict(
-            creation_direction=-1,
-            radius=50,
-            creation_timeout=.4,
-            choices=[
-            dict(text='submenu 1', index=1, callback=app.callback1),
-            dict(text='action 1', index=2, callback=app.callback2),
-            dict(text='action 2', index=3, callback=app.callback3),
-            dict(text='submenu 2', index=4, callback=app.callback4),
-            dict(text='Exit', index=5, callback=app.callback5),
-            ])
-'''
-
+Builder.load_string(KV)
 
 class ModernMenuApp(App):
     def build(self):
+        self.sm=ScreenManager(transition=FadeTransition())
+        self.sm.add_widget(Home(name='home'))
+        self.sm.add_widget(Calculator(name='calculator'))
         Clock.schedule_interval(camera.frame,(1/10))
-        return Builder.load_string(TESTAPP_KV)
+        
+        return self.sm
+
+    def calculator(self, *args):
+        args[0].parent.dismiss()
+        self.sm.current="calculator"
 
     def callback1(self, *args):
         print ("test 1")

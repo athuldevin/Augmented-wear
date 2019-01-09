@@ -8,13 +8,13 @@ class cam():
         print ("cam initialized")
         self.range_filter = 'HSV'
         (self.screen_width,self.screen_height) = pyautogui.size()
-        self.camera = cv2.VideoCapture(0)
+        self.camera = cv2.VideoCapture(1)
         ret, image = self.camera.read()
         if (not ret):
             printf("cam error!")
             pass
         (self.height,self.width) = image.shape[:2]
-        self.v1_min, self.v2_min, self.v3_min, self.v1_max, self.v2_max, self.v3_max = [0, 103, 147, 19, 222, 255] #[0, 176, 79, 19, 255, 255]
+        self.v1_min, self.v2_min, self.v3_min, self.v1_max, self.v2_max, self.v3_max =  [0, 176, 79, 19, 255, 255]#[0, 103, 147, 19, 222, 255]
         self.items = [[0,0]] #queue
 
     def frame(self,*args):
