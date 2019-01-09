@@ -1,131 +1,110 @@
-# width: self.parent.parent.button_width
-# The above referencing used in the
-# dynamic classes below follows like this:
-# NumberButton (self), RowLayout (parent), 
-# CalculatorWidget (parent), 120 (which is
-# variable 'button_width' in Python code)
-
 <Button>:
 	color: [.31, .573, .816, .9]
 	background_color: [0, 0, 0, 1]
+	font_size:self.height/3
 	canvas.after:
 		Color:
             rgba: (.31, .573, .816, .9)
 		Line:
 			rounded_rectangle:
-				( self.x+.1*self.width, self.y+.1*self.height, self.width-.2*self.width,self.height-.2*self.height,30)
+				( self.x+.1*self.width, self.y+.1*self.height, self.width-.2*self.width,self.height-.2*self.height,self.height/3)
 			width: 2
-			
-<NumberButton@Button>:
-    on_release: self.parent.parent.ids.calc_input.text += self.text
-    size_hint: None, None
-    font_size: self.parent.parent.button_font_size
-    width: self.parent.parent.button_width
-    height: self.parent.parent.button_height
-
-<ZeroButton@Button>:
-    on_release: self.parent.parent.ids.calc_input.text += self.text
-    size_hint: None, None
-    font_size: self.parent.parent.button_font_size
-    width: self.parent.parent.button_width * 2 
-    height: self.parent.parent.button_height
-
-<OperatorButton@Button>:
-    on_release: self.parent.parent.ids.calc_input.text += self.text
-    size_hint: None, None
-    font_size: self.parent.parent.button_font_size
-    width: self.parent.parent.button_width
-    height: self.parent.parent.button_height
-    
-
-<EqualsButton@Button>:
-    on_release: self.parent.parent.calculate()
-    size_hint: None, None
-    font_size: self.parent.parent.button_font_size
-    width: self.parent.parent.button_width
-    height: self.parent.parent.button_height
-
-
-<SpecialButton@Button>:
-    size_hint: None, None
-    font_size: self.parent.parent.button_font_size
-    width: self.parent.parent.button_width
-    height: self.parent.parent.button_height
-    color: [0, 0, 1, 1]
-
-<RowLayout@BoxLayout>:
-    size_hint: None, None
 
 
 <CalculatorWidget>:
-    rows: 6
+    orientation: 'vertical'
+    Label:
+        size_hint_y: None
+        height: '50dp'
+        id: calc
+        text: ''
 
-    RowLayout:
-		#Button:
-		#	id: calc_inpu
-        #    font_size: 40
-        #    size_hint: None, None
-        #    height: root.button_height * 1.1
-        #    width: root.button_width * 4
-		#	halign: "left"
-		#	valign: "bottom"
-            
-        TextInput:
-            id: calc_input
-            font_size: 80
-            size_hint: None, None
-            height: root.button_height * 1.1
-            width: root.button_width * 4
-            readonly: True
-            multiline: False
-
-    RowLayout:
-        SpecialButton:
-            text: 'AC'
-            on_release: self.parent.parent.clear()
-        SpecialButton:
+    GridLayout:
+        cols: 8
+		Widget:
+            Button:
+				id: calc
+                y: placeholder1.y
+                x: self.parent.x
+                width: self.parent.width +placeholder1.width*3
+                height: self.parent.height +placeholde2.height*2
+                text: ''
+		Widget:
+			id:placeholde2
+		Widget:
+		Widget:
+        Button:
+            text: '1'
+            on_press: calc.text += '1'
+        Button:
+            text: '2'
+            on_press: calc.text += '2'
+        Button:
+            text: '3'
+            on_press: calc.text += '3'
+        Button:
             text: '+/-'
             on_release: self.parent.parent.switch()
-        SpecialButton:
-            text: 'del'
-            on_release: self.parent.parent.delete() 
-        OperatorButton:
-            text: '/'
-    RowLayout: 
-        NumberButton:
-            text: '1'
-        NumberButton:
-            text: '2'
-        NumberButton:
-            text: '3'
-        OperatorButton:
-            text: '*'
-
-    RowLayout:
-        NumberButton:
+			color: [0, 0, 1, 1]
+		Widget:
+		Widget:
+		Widget:
+		Widget:
+        Button:
             text: '4'
-        NumberButton:
+            on_press: calc.text += '4'
+        Button:
             text: '5'
-        NumberButton:
+            on_press: calc.text += '5'
+        Button:
             text: '6'
-        OperatorButton:
-            text: '-'
-
-    RowLayout:
-        NumberButton:
+            on_press: calc.text += '6'
+        Button:
+            text: 'AC'
+            on_release: self.parent.parent.clear()
+			color: [0, 0, 1, 1]
+		Widget:
+			id:placeholder1
+		Widget:
+		Widget:
+		Widget:
+        Button:
             text: '7'
-        NumberButton:
+            on_press: calc.text += '7'
+        Button:
             text: '8'
-        NumberButton:
+            on_press: calc.text += '8'
+        Button:
             text: '9'
-        OperatorButton:
+            on_press: calc.text += '9'
+        Button:
+            text: 'CE'
+            on_release: self.parent.parent.delete()
+			color: [0, 0, 1, 1]
+		Button:
             text: '+'
-
-    RowLayout:
-        ZeroButton:
+            on_press: calc.text += '+'
+        Button:
+            text: '-'
+            on_press: calc.text += '-'
+        Button:
+            text: '*'
+            on_press: calc.text += '*'
+        Button:
+            text: '/'
+            on_press: calc.text += '/'
+		Button:
             text: '0'
-        NumberButton:
+            on_press: calc.text += '0'
+        Button:
             text: '.'
-        EqualsButton:
-            text: '='
-			
+            on_press: calc.text += '.'
+        Widget:
+            Button:
+                pos: self.parent.pos
+                height: self.parent.height
+                width: self.parent.width * 2
+                text: '='
+                on_release: self.parent.parent.parent.calculate()
+
+		

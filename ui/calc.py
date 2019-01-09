@@ -1,11 +1,12 @@
 from kivy.app import App
 
 from kivy.core.window import Window
-
+from kivy.lang import Builder
 from kivy.config import Config
 
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.textinput import TextInput
 from kivy.uix.label import Label
 from kivy.uix.button import Button 
@@ -14,20 +15,20 @@ from kivy.uix.scrollview import ScrollView
 from kivy.uix.behaviors.button import ButtonBehavior
 from kivy.uix.widget import Widget
 from kivy.vector import Vector
+from kivy.event import EventDispatcher
+from kivy.properties import NumericProperty, ReferenceListProperty
 
-from kivy.properties import NumericProperty
 
-class CalculatorWidget(GridLayout):
-    int_button_width = 120
-    int_button_height = 100
+class CalculatorWidget(BoxLayout):
+    int_button_width = 550
+    int_button_height = 300
     int_button_font_size = 40
 
     button_width = NumericProperty(int_button_width)
     button_height = NumericProperty(int_button_height)
     button_font_size = NumericProperty(int_button_font_size)
 
-    Window.size = (int_button_width * 4, 
-        int_button_height * 6)
+    Window.size = (int_button_width , int_button_height )
 
     def calc_error(self, error, calc_entry):
         content = BoxLayout(orientation='vertical')
@@ -47,36 +48,36 @@ class CalculatorWidget(GridLayout):
         popup.open()
 
     def calculate(self, *args):
-        calc_entry = self.ids.calc_input.text 
+        calc_entry = self.ids.calc.text 
         if calc_entry != '':
             if calc_entry[0] in '1234567890-+':
                 try:
                     ans = str(eval(calc_entry))
-                    self.ids.calc_input.text = ans
+                    self.ids.calc.text = ans
                 except Exception as error:
                     self.calc_error(error, calc_entry)
                     pass
 
     def delete(self, *args):
-        self.ids.calc_input.text = self.ids.calc_input.text[:-1]
+        self.ids.calc.text = self.ids.calc.text[:-1]
 
     def clear(self, *args):
-        self.ids.calc_input.text = ''
+        self.ids.calc.text = ''
 
     def switch(self, *args):
-        calc_entry = self.ids.calc_input.text
+        calc_entry = self.ids.calc.text
         if calc_entry != '':
             if calc_entry[0] in '+1234567890':
-                self.ids.calc_input.text = '-' + calc_entry
+                self.ids.calc.text = '-' + calc_entry
             if calc_entry[0] == '-':
-                self.ids.calc_input.text = calc_entry[1:]
+                self.ids.calc.text = calc_entry[1:]
 
 class Button(ButtonBehavior,Widget):
     pass
     
 class CalculatorApp(App):
     def build(self):
-        
+        Builder.load_file("kv/Calculator.kv")
         return CalculatorWidget()
 
 if __name__ == '__main__':
