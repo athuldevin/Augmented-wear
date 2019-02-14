@@ -4,23 +4,29 @@ import pyautogui
 
 class cam():
 
-    def __init__(self):
+    def __init__(self,cam_num):
         print ("cam initialized")
         self.range_filter = 'HSV'
         (self.screen_width,self.screen_height) = pyautogui.size()
-        self.camera = cv2.VideoCapture(1)
+        self.camera = cv2.VideoCapture(cam_num)
         ret, image = self.camera.read()
         if (not ret):
-            printf("cam error!")
+            print("cam error!")
             pass
         (self.height,self.width) = image.shape[:2]
-        self.v1_min, self.v2_min, self.v3_min, self.v1_max, self.v2_max, self.v3_max =  [0, 176, 79, 19, 255, 255]#[0, 103, 147, 19, 222, 255]
+        if (cam_num==0):
+            self.flip=True
+            self.v1_min, self.v2_min, self.v3_min, self.v1_max, self.v2_max, self.v3_max = [0, 108, 119, 210, 224, 255]#[0, 103, 147, 19, 222, 255]
+        else:
+            self.flip=False
+            self.v1_min, self.v2_min, self.v3_min, self.v1_max, self.v2_max, self.v3_max = [0, 176, 79, 19, 255, 255]
         self.items = [[0,0]] #queue
 
     def frame(self,*args):
         
         ret, image = self.camera.read()
-        image = cv2.flip(image, 1)
+        if self.flip:
+            image = cv2.flip(image, 1)
         frame_to_thresh = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         thresh = cv2.inRange(frame_to_thresh, (self.v1_min, self.v2_min, self.v3_min), (self.v1_max, self.v2_max, self.v3_max))
 

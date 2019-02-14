@@ -16,38 +16,29 @@ from kivy.uix.behaviors.button import ButtonBehavior
 from kivy.uix.widget import Widget
 from kivy.vector import Vector
 from kivy.event import EventDispatcher
+from kivy.uix.screenmanager import Screen
 from kivy.properties import NumericProperty, ReferenceListProperty
 
 
-class CalculatorWidget(BoxLayout):
-    int_button_width = 550
-    int_button_height = 300
-    int_button_font_size = 40
+class CalculatorWidget(Screen):
+    loc_x = 300
+    loc_y = 250
+    calc_w = 550
+    calc_h = 300
+    int_button_font_size = 4
 
-    button_width = NumericProperty(int_button_width)
-    button_height = NumericProperty(int_button_height)
-    button_font_size = NumericProperty(int_button_font_size)
+    center_x = NumericProperty(loc_x)
+    center_y = NumericProperty(loc_y)
+    calc_width = NumericProperty(calc_w)
+    calc_height = NumericProperty(calc_h)
 
-    Window.size = (int_button_width , int_button_height )
+    
 
     def calc_error(self, error, calc_entry):
-        content = BoxLayout(orientation='vertical')
-        scrollview = ScrollView()
-
-        close_popup = Button(text='Close this popup')
-        error_message = Label(text=str(error))
-
-        scrollview.add_widget(error_message)
-        content.add_widget(scrollview)
-        content.add_widget(close_popup)
-
-        popup = Popup(title='An error occured',
-            content=content, size_hint=(.8, .8))
-
-        close_popup.bind(on_release=popup.dismiss)
-        popup.open()
+        self.ids.calc.text = 'error !'
 
     def calculate(self, *args):
+        print (self.ids)
         calc_entry = self.ids.calc.text 
         if calc_entry != '':
             if calc_entry[0] in '1234567890-+':
@@ -74,7 +65,7 @@ class CalculatorWidget(BoxLayout):
 
 class Button(ButtonBehavior,Widget):
     pass
-    
+
 class CalculatorApp(App):
     def build(self):
         Builder.load_file("kv/Calculator.kv")

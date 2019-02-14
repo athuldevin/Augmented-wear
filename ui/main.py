@@ -1,5 +1,6 @@
 import cv2
 import cam
+from calc import CalculatorWidget,Button
 import pyautogui
 import numpy as np
 from copy import copy
@@ -16,7 +17,7 @@ from kivy.uix.screenmanager import ScreenManager,Screen,FadeTransition
 from kivy.properties import NumericProperty, ListProperty, ObjectProperty, DictProperty
 
 
-camera=cam.cam()
+camera=cam.cam(0)
 Window.fullscreen = 'auto'
 '''Window.borderless=1
 Window.left=100
@@ -84,6 +85,7 @@ KV = '''
 
 def dist(x,y):
     (x1, y1),(x2,y2)=x,y
+
     return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
 
 
@@ -138,6 +140,7 @@ class ModernMenu(Widget):
         self.choices_history.append(self.choices)
         self.choices = choices
         self.open_menu()
+
 
     def back(self, *args):
         self.choices = self.choices_history.pop()
@@ -203,19 +206,18 @@ class MenuSpawner(Widget):
         self.add_widget(menu)
         menu.start_display(touch)
 
-class Calculator(Screen):
-    Builder.load_file("kv/calc.kv")
 
 class Home(Screen):
     Builder.load_file("kv/home.kv")
     
 Builder.load_string(KV)
-
+Builder.load_file("kv/calculator.kv")
 class ModernMenuApp(App):
     def build(self):
         self.sm=ScreenManager(transition=FadeTransition())
         self.sm.add_widget(Home(name='home'))
-        self.sm.add_widget(Calculator(name='calculator'))
+        self.sm.add_widget(CalculatorWidget(name='calculator'))
+        cam.cam_num=0
         Clock.schedule_interval(camera.frame,(1/10))
         
         return self.sm
