@@ -3,6 +3,7 @@ import cam
 from calc import CalculatorWidget,Button
 import pyautogui
 from gallery import Pictures,Picture
+from album import Album,Folder
 import numpy as np
 from copy import copy
 from kivy.app import App
@@ -23,7 +24,6 @@ Window.fullscreen = 'auto'
 '''Window.borderless=1
 Window.left=100
 Window.top=100
-
 Window.hieght=200
 '''
 KV = '''
@@ -214,12 +214,14 @@ class Home(Screen):
 Builder.load_string(KV)
 Builder.load_file("kv/calculator.kv")
 Builder.load_file("kv/gallery.kv")
+Builder.load_file("kv/album.kv")
 class ModernMenuApp(App):
     def build(self):
         self.sm=ScreenManager(transition=FadeTransition())
         self.sm.add_widget(Home(name='home'))
         self.sm.add_widget(CalculatorWidget(name='calculator'))
         self.sm.add_widget(Pictures(name='pictures'))
+        self.sm.add_widget(Album(name='album'))
         cam.cam_num=0
         Clock.schedule_interval(camera.frame,(1/10))
         
@@ -231,7 +233,7 @@ class ModernMenuApp(App):
 
     def pictures(self, *args):
         args[0].parent.dismiss()
-        self.sm.current="pictures"
+        self.sm.current="album"
 
     def callback1(self, *args):
         print ("test 1")

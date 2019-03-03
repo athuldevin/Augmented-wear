@@ -8,6 +8,7 @@ from kivy.uix.scatter import Scatter
 from kivy.properties import StringProperty
 from kivy.uix.button import Button 
 from kivy.uix.screenmanager import Screen
+from kivy.uix.scrollview import ScrollView
 
 class Picture(Scatter):
     '''Picture is the class that will show the image with a white border and a
@@ -19,26 +20,29 @@ class Picture(Scatter):
     '''
 
     source = StringProperty(None)
-
+class backButton(Button):
+    pass
 
 class Pictures(Screen):
 
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         # the root is created in pictures.kv
-        root = self
-
-        # get any files into images directory
+    def show(self,folder_name):
+        
+        print (folder_name)
+        
         curdir = dirname(__file__)
-        for filename in glob(join(curdir, 'images', '*')):
+        self.ids.frame.add_widget(backButton())
+        for filename in glob(join(curdir, 'images',folder_name, '*')):
             try:
                 # load the image
                 picture = Picture(source=filename, rotation=randint(-30, 30))
                 # add to the main field
-                root.add_widget(picture)
+                self.ids.frame.add_widget(picture)
             except Exception as e:
-                Logger.exception('Pictures: Unable to load <%s>' % filename)
-
+                print (e)
+    
     def on_pause(self):
         return True
 
