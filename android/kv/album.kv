@@ -1,0 +1,53 @@
+#:kivy 1.0
+#:import kivy kivy
+#:import win kivy.core.window
+
+<Album>:
+
+    ScrollView:
+        content: content
+        do_scroll_x: False
+        size_hint: 1, None
+        padding: 20
+        spacing: 20
+        size: win.Window.size
+        GridLayout:
+            id: content
+            cols: 3
+            spacing: win.Window.width * 0.01
+            size_hint_y:None
+            #height: self.minimum_height
+            Widget:
+            Widget:
+            Button:
+                size_hint: 1, None
+                size:100,50
+                font_size:40
+                text:"<<<"
+                on_release:root.manager.current='home'
+
+<Folder>:
+
+    # each time a picture is created, the image can delay the loading
+    # as soon as the image is loaded, ensure that the center is changed
+    # to the center of the screen.
+
+    id: image
+    source: root.source
+    on_release:root.switch()
+        
+    
+    size_hint: 1.5, None
+    # create initial image to be 400 pixels width
+    size: 300, 300 / self.image_ratio
+
+    # add shadow background
+    canvas.before:
+        Color:
+            rgba: 1,1,1,1
+        BorderImage:
+            source: '123.png'
+            border: (36,36,36,36)
+            size:(self.width-72, self.height+72)
+            pos: (self.x+36,self.y-36)
+    

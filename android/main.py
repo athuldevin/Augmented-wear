@@ -1,11 +1,10 @@
-import cv2
-import cam
+
 from calc import CalculatorWidget,Button
-import pyautogui
-from gallery import Pictures,Picture
-from album import Album,Folder
-from paint import Painter
-import numpy as np
+#mport pyautogui
+#from gallery import Pictures,Picture
+#from album import Album,Folder
+from clock import MyClockWidget,Ticks
+
 from copy import copy
 from kivy.app import App
 from kivy.clock import Clock
@@ -20,8 +19,6 @@ from kivy.uix.screenmanager import ScreenManager,Screen,FadeTransition
 from kivy.properties import NumericProperty, ListProperty, ObjectProperty, DictProperty
 
 
-camera=cam.cam(0)
-Window.fullscreen = 'auto'
 '''Window.borderless=1
 Window.left=100
 Window.top=100
@@ -56,17 +53,24 @@ KV = '''
 <ModernMenuLabel>:
     size: self.texture_size
     padding: 5, 5
+    font_size: 50
+    color:.31, .573, .816, .9
     on_press: self.callback and self.callback(self)
     canvas.before:
         Color:
             rgba: .31, .573, .816, .9
-        Rectangle:
-            pos: self.pos
-            size: self.size
+        Line:
+            points:
+                self.pos,(self.pos[0],self.pos[1]+self.size[1]),(self.pos[0]+self.size[0],self.pos[1]+self.size[1]),(self.pos[0]+self.size[0],self.pos[1]),self.pos
+            width:self.parent.line_width if self.parent else 1
         Line:
             points:
                 (
-                self.center_x, self.center_y,
+                (self.center_x+self.parent.center_x + cos(
+                self.opacity * self.index * 2 * pi / self.siblings
+                ) * self.parent.radius)/2, (self.center_y+self.parent.center_y + sin(
+                self.opacity * self.index * 2 * pi / self.siblings
+                ) * self.parent.radius)/2,
                 self.parent.center_x + cos(
                 self.opacity * self.index * 2 * pi / self.siblings
                 ) * self.parent.radius,
@@ -93,7 +97,7 @@ def dist(x,y):
 
 class ModernMenuLabel(ButtonBehavior, Label):
     index = NumericProperty(0)
-    radius = NumericProperty(100)
+    radius = NumericProperty(250)
     siblings = NumericProperty(1)
     callback = ObjectProperty(None)
     
@@ -216,31 +220,30 @@ Builder.load_string(KV)
 Builder.load_file("kv/calculator.kv")
 Builder.load_file("kv/gallery.kv")
 Builder.load_file("kv/album.kv")
-Builder.load_file("kv/paint.kv")
 class ModernMenuApp(App):
     def build(self):
         self.sm=ScreenManager(transition=FadeTransition())
         self.sm.add_widget(Home(name='home'))
         self.sm.add_widget(CalculatorWidget(name='calculator'))
-        self.sm.add_widget(Pictures(name='pictures'))
-        self.sm.add_widget(Album(name='album'))
-        self.sm.add_widget(Painter(name='painter'))
-        cam.cam_num=0
-        Clock.schedule_interval(camera.frame,(1/10))
+        self.sm.add_widget(MyClockWidget(name='clock'))
+        #self.sm.add_widget(Pictures(name='pictures'))
+        #self.sm.add_widget(Album(name='album'))
+
         
         return self.sm
 
     def calculator(self, *args):
         args[0].parent.dismiss()
         self.sm.current="calculator"
+    
+    def clock(self, *args):
+        args[0].parent.dismiss()
+        
+        self.sm.current="clock"
 
     def pictures(self, *args):
         args[0].parent.dismiss()
         self.sm.current="album"
-
-    def painter(self, *args):
-        args[0].parent.dismiss()
-        self.sm.current="painter"
 
     def callback1(self, *args):
         print ("test 1")

@@ -48,7 +48,7 @@ def main():
 
     range_filter = 'HSV'
 
-    camera = cv2.VideoCapture(0)
+    camera = cv2.VideoCapture(1)
 
     setup_trackbars(range_filter)
 
@@ -88,18 +88,18 @@ def main():
             center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
  
             # only proceed if the radius meets a minimum size
-            if radius > 10:
+            if radius > 25:
                 # draw the circle and centroid on the frame,
                 # then update the list of tracked points
                 cv2.circle(image, (int(x), int(y)), int(radius),(0, 255, 255), 2)
                 cv2.circle(image, center, 3, (0, 0, 255), -1)
                 cv2.putText(image,"centroid", (center[0]+10,center[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 255),1)
-                cv2.putText(image,"("+str(center[0])+","+str(center[1])+")", (center[0]+10,center[1]+15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 255),1)
+                cv2.putText(image,"("+str(center[0])+","+str(center[1])+","+str(radius)+")", (center[0]+10,center[1]+15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 255),1)
  
         # show the frame to our screen
         cv2.imshow("Original", image)
         cv2.imshow("Thresh", thresh)
-        #cv2.imshow("Mask", mask)
+        cv2.imshow("Mask", mask)
 
         if cv2.waitKey(1) & 0xFF is ord('q'):
             print (get_trackbar_values(range_filter))

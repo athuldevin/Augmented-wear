@@ -1,0 +1,53 @@
+#:kivy 1.0
+#:import kivy kivy
+#:import win kivy.core.window
+
+<Pictures>:
+
+    FloatLayout: 
+    
+        id: frame
+        
+        
+        spacing: win.Window.width * 0.01
+        #height: self.minimum_height
+        
+            
+        Button:
+            size_hint: .15,.1
+            pos:win.Window.center
+            text:"<<<"
+            on_release:root.manager.current='album'
+
+<backButton>:
+    size_hint: .15,.1
+    pos:win.Window.center
+    text:"<<<"
+    on_release:root.parent.parent.manager.current='album'
+
+
+
+<Picture>:
+    # each time a picture is created, the image can delay the loading
+    # as soon as the image is loaded, ensure that the center is changed
+    # to the center of the screen.
+    on_size: self.center = win.Window.center
+    size: image.size
+    size_hint: None, None
+
+    Image:
+        id: image
+        source: root.source
+
+        # create initial image to be 400 pixels width
+        size: 300, 300 / self.image_ratio
+
+        # add shadow background
+        canvas.before:
+            Color:
+                rgba: 1,1,1,1
+            BorderImage:
+                source: 'shadow32.png'
+                border: (36,36,36,36)
+                size:(self.width+72, self.height+72)
+                pos: (-36,-36)
