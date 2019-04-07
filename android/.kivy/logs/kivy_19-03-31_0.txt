@@ -1,0 +1,27 @@
+[INFO              ] Logger: Record log in /storage/emulated/0/kivy/awt2/.kivy/logs/kivy_19-03-31_0.txt
+[INFO              ] Kivy: v1.9.1
+[INFO              ] Python: v2.7.2 (default, Mar 20 2016, 23:30:13) 
+[GCC 4.8]
+[INFO              ] Factory: 179 symbols loaded
+[WARNING           ] stderr: /data/user/0/org.kivy.pygame/files/lib/python2.7/site-packages/kivy/core/image/img_pygame.py:13: RuntimeWarning: import cdrom: No module named cdrom
+[WARNING           ] stderr: (ImportError: No module named cdrom)
+[INFO              ] Image: Providers: img_tex, img_dds, img_gif, img_pygame, img_pil (img_ffpyplayer ignored)
+[INFO              ] Window: Provider: pygame
+[INFO              ] GL: OpenGL version <OpenGL ES 3.0 V@269.0 AU@  (GIT@I7663a5f222)>
+[INFO              ] GL: OpenGL vendor <Qualcomm>
+[INFO              ] GL: OpenGL renderer <Adreno (TM) 308>
+[INFO              ] GL: OpenGL parsed version: 3, 0
+[INFO              ] GL: Texture max size <4096>
+[INFO              ] GL: Texture max units <16>
+[INFO              ] Support: Android install hooks
+[INFO              ] Window: virtual keyboard not allowed, single mode, not docked
+[INFO              ] Text: Provider: pygame
+[WARNING           ] stderr: Traceback (most recent call last):
+[WARNING           ] stderr:   File "main.py", line 279, in <module>
+[WARNING           ] stderr:     ModernMenuApp().run()
+[WARNING           ] stderr:   File "/home/tito/code/python-for-android-upstream/build/python-install/lib/python2.7/site-packages/kivy/app.py", line 802, in run
+[WARNING           ] stderr:   File "main.py", line 229, in build
+[WARNING           ] stderr:     self.sm.add_widget(Album(name='album'))
+[WARNING           ] stderr:   File "/storage/emulated/0/kivy/awt2/album.py", line 38, in __init__
+[WARNING           ] stderr:     super().__init__(**kwargs)
+[WARNING           ] stderr: TypeError: super() takes at least 1 argument (0 given)

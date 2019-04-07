@@ -1,8 +1,6 @@
-
 from calc import CalculatorWidget,Button
-#mport pyautogui
-#from gallery import Pictures,Picture
-#from album import Album,Folder
+from kivy.config import Config
+from album import Album,Folder
 from clock import MyClockWidget,Ticks
 
 from copy import copy
@@ -222,6 +220,7 @@ Builder.load_file("kv/gallery.kv")
 Builder.load_file("kv/album.kv")
 class ModernMenuApp(App):
     def build(self):
+        Config.set('input', 'default', 'tuio,192.168.43.1:3334')
         self.sm=ScreenManager(transition=FadeTransition())
         self.sm.add_widget(Home(name='home'))
         self.sm.add_widget(CalculatorWidget(name='calculator'))

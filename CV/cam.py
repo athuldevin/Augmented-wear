@@ -1,29 +1,30 @@
 import cv2
 import numpy as np
-import pyautogui
+from oscpy.client import OSCClient
 
 class cam():
 
-    def __init__(self,cam_num):
+    def __init__(self,cam_num,ip,port):
         print ("cam initialized")
+        self.osc = OSCClient(ip, port)
         self.range_filter = 'HSV'
-        self.i=0
-        (self.screen_width,self.screen_height) = pyautogui.size()
+        self.sequence_no=1
+        self.flag=True
         self.camera = cv2.VideoCapture(cam_num)
         ret, image = self.camera.read()
         if (not ret):
             print("cam error!")
             pass
         (self.height,self.width) = image.shape[:2]
-        if (cam_num==0):
+        if (cam_num==5):
             self.flip=True
             self.m1v1_min, self.m1v2_min, self.m1v3_min, self.m1v1_max, self.m1v2_max, self.m1v3_max = [155, 6, 0, 170, 255, 255]#[50, 20, 0, 70, 255, 255]
             self.m2v1_min, self.m2v2_min, self.m2v3_min, self.m2v1_max, self.m2v2_max, self.m2v3_max = [50, 7, 0, 78, 255, 255]#[0, 5, 0, 10, 255, 255]
         
         else:
             self.flip=False
-            self.m1v1_min, self.m1v2_min, self.m1v3_min, self.m1v1_max, self.m1v2_max, self.m1v3_max = [50, 20, 0, 70, 255, 255]
-            self.m2v1_min, self.m2v2_min, self.m2v3_min, self.m2v1_max, self.m2v2_max, self.m2v3_max = [0, 5, 0, 10, 255, 255]
+            self.m1v1_min, self.m1v2_min, self.m1v3_min, self.m1v1_max, self.m1v2_max, self.m1v3_max = [1, 25, 0, 10, 255, 255]
+            self.m2v1_min, self.m2v2_min, self.m2v3_min, self.m2v1_max, self.m2v2_max, self.m2v3_max = [44, 10, 0, 66, 255, 255]
         self.items = [[0,0]] #queue
 
     def frame(self,*args):
@@ -73,27 +74,27 @@ class cam():
             if radius > 25:
                 # draw the circle and centroid on the frame,
                 # then update the list of tracked points
-                #cv2.circle(image, (int(self.x), int(self.y)), int(radius),(0, 255, 255), 2)
-                #c1=((int(x1)+int(self.x))*(self.screen_width/self.width))/2
-                #c2=((int(y1)+int(self.y))*(self.screen_width/self.width))/2
-                c1,c2=self.setCursorPos(int(x1)*(self.screen_width/self.width),int(y1)*(self.screen_width/self.width),int(self.x)*(self.screen_width/self.width),int(self.y)*(self.screen_width/self.width))
+                
+                c1,c2=self.setCursorPos(int(x1),int(y1),int(self.x),int(self.y))
                 
                 if (len(cnts2)>0) and (radius2 > 25):
-                    
-                    #if (self.dist(self.items[-2][0],self.items[-2][1],int(self.x),int(self.y))<5):
-                    if (self.i==0 or self.i>15):
-                        pyautogui.mouseDown(c1,c2, button='left')
-                        self.i=self.i+1
-                        print(self.i)
-                    else:
-                        self.i=self.i+1
-                #pyautogui.moveTo(int(x)*(screen_width/width), int(y)*(screen_height/height))
-                else:
-                    self.i=0
-                    pyautogui.mouseUp(c1,c2, button='left')
-                    #pyautogui.dragTo(int(x)*(screen_width/width), int(y)*(screen_height/height),(1/20), button='left')
+                    c1,c2 = c1/self.width , c2/self.height
+                    self.osc.send_message(b'/tuio/2Dcur',(b'alive',self.sequence_no))
+                    self.osc.send_message(b'/tuio/2Dcur',(b'set',self.sequence_no,c1,c2))
+                    self.flag=True
+                    print (self.sequence_no)
                     
 
+                    
+                
+                else:
+                    if self.flag:
+                        if (self.sequence_no<99999):
+                            self.sequence_no=self.sequence_no+1
+                        else:
+                            self.sequence_no=1
+                        print (self.sequence_no)
+                        self.flag=False
                 #cv2.circle(image, center, 3, (0, 0, 255), -1)
                 #cv2.putText(image,"centroid", (center[0]+10,center[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 255),1)
                 #cv2.putText(image,"("+str(center[0])+","+str(center[1])+")", (center[0]+10,center[1]+15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 255),1)
@@ -129,6 +130,6 @@ class cam():
         return a/len(self.items),b/len(self.items)
 
 if __name__ == '__main__':
-    a=cam(0)
+    a=cam(0,'192.168.43.8',3334)
     while True:
         a.frame()
