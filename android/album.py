@@ -25,7 +25,7 @@ class Folder(ButtonBehavior, Image):
     def __init__(self, **kwargs):
         super(Folder, self).__init__(**kwargs)
     def switch(self):
-        print("switch is called",self.folder_name)
+        
         self.parent.parent.parent.manager.get_screen('pictures').ids.frame.clear_widgets()
         self.parent.parent.parent.manager.get_screen('pictures').show(self.folder_name)
         self.parent.parent.parent.manager.current="pictures"
@@ -35,7 +35,7 @@ class Folder(ButtonBehavior, Image):
 class Album(Screen):
 
     def __init__(self,**kwargs):
-        super().__init__(**kwargs)
+        super(Album,self).__init__(**kwargs)
         # the root is created in pictures.kv
         '''
         curdir = os.path.dirname(__file__)
@@ -48,7 +48,6 @@ class Album(Screen):
             except Exception as e:
                 print(e)
         '''
-
 
         # get any files into images directory
         curdir = os.path.dirname(__file__)
@@ -72,4 +71,4 @@ class Album(Screen):
 
 
 if __name__ == '__main__':
-    PicturesApp().run()
+    AlbumApp().run()

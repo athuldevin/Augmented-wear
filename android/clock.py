@@ -7,6 +7,7 @@ from kivy.clock import Clock
 from kivy.lang import Builder
 from kivy.properties import NumericProperty
 from kivy.uix.screenmanager import Screen
+from kivy.uix.behaviors import ButtonBehavior 
 
 import datetime
 
@@ -61,18 +62,22 @@ kv = '''
     Ticks:
         id: ticks
         r: min(root.size)*0.9/2
+    
 '''
 Builder.load_string(kv)
 
 class MyClockWidget(Screen,FloatLayout):
     pass
-
-class Ticks(Widget):
+class Ticks(ButtonBehavior,Widget):
     def __init__(self, **kwargs):
         super(Ticks, self).__init__(**kwargs)
         self.bind(pos=self.update_clock)
         self.bind(size=self.update_clock)
         Clock.schedule_interval(self.update_clock, 1)
+    
+    def on_release(self):
+        print('here')
+        self.parent.manager.current='home'
 
     def update_clock(self, *args):
         self.canvas.clear()

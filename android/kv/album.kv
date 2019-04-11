@@ -14,7 +14,8 @@
         GridLayout:
             id: content
             cols: 3
-            spacing: win.Window.width * 0.01
+            padding: 20
+            spacing: win.Window.width * 0.05
             size_hint_y:None
             #height: self.minimum_height
             Widget:
@@ -48,6 +49,6 @@
         BorderImage:
             source: '123.png'
             border: (36,36,36,36)
-            size:(self.width-72, self.height+72)
-            pos: (self.x+36,self.y-36)
+            size:(self.width+36, self.height+72)
+            pos: (self.x-18,self.y-36)
     

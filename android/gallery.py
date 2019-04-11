@@ -26,11 +26,9 @@ class backButton(Button):
 class Pictures(Screen):
 
     def __init__(self,**kwargs):
-        super().__init__(**kwargs)
+        super(Pictures,self).__init__(**kwargs)
         # the root is created in pictures.kv
     def show(self,folder_name):
-        
-        print (folder_name)
         
         curdir = dirname(__file__)
         self.ids.frame.add_widget(backButton())

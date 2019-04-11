@@ -56,7 +56,7 @@ class CalculatorWidget(Screen):
         self.ids.calc.text = ''
 
     def switch(self, *args):
-        calc_entry = sel2f.ids.calc.text
+        calc_entry = self.ids.calc.text
         if calc_entry != '':
             if calc_entry[0] in '+1234567890':
                 self.ids.calc.text = '-' + calc_entry
