@@ -36,7 +36,7 @@ class Draw(Widget):
         ud = touch.ud
         ud['group'] = g = str(touch.uid)
         with self.canvas:
-            ud['color'] = Color(1, 1, 1, mode='rgb', group=g)
+            ud['color'] = Color(.31, .573, .816, mode='rgb', group=g)
             ud['lines'] = (
                 
                 Point(points=(touch.x, touch.y), source='particle.png',

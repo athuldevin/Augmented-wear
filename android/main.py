@@ -224,12 +224,12 @@ class ModernMenuApp(App):
     def build(self):
         Config.set('input', 'default', 'tuio,127.0.0.1:3334')
         self.sm=ScreenManager(transition=FadeTransition())
-        self.sm.add_widget(Painter(name='paint'))
+        
         self.sm.add_widget(Home(name='home'))
         self.sm.add_widget(CalculatorWidget(name='calculator'))
         self.sm.add_widget(MyClockWidget(name='clock'))
         self.sm.add_widget(Pictures(name='pictures'))
-        
+        self.sm.add_widget(Painter(name='paint'))
         self.sm.add_widget(Album(name='album'))
         
         return self.sm
@@ -251,33 +251,25 @@ class ModernMenuApp(App):
         args[0].parent.dismiss()
         self.sm.current="album"
 
-    def callback1(self, *args):
-        print ("test 1")
-        args[0].parent.open_submenu(
-            choices=[
-                dict(text='action 1', index=1, callback=self.callback2),
-                dict(text='action 2', index=2, callback=self.callback2),
-                dict(text='action 3', index=3, callback=self.callback2),
-            ])
-
-    def callback2(self, *args):
-        print ("test 2")
+    def callback(self, *args):
         args[0].parent.dismiss()
 
     def callback3(self, *args):
         print ("test 3")
         args[0].parent.dismiss()
 
-    def callback4(self, *args):
-        print ("test 4")
+    def devolopers(self, *args):
+        
         args[0].parent.open_submenu(
             choices=[
-                dict(text='hai', index=1, callback=self.callback2),
-                dict(text='oh', index=2, callback=self.callback2),
+                dict(text='Anu A', index=1, callback=self.callback),
+                dict(text='Arjun K', index=2, callback=self.callback),
+                dict(text='Philip Raj', index=3, callback=self.callback),
+                dict(text='Athul Devin', index=4, callback=self.callback)
             ])
 
-    def callback5(self, *args):
-        print ("exit")
+    def exit1(self, *args):
+        
         App.get_running_app().stop()
         args[0].parent.dismiss()
 
