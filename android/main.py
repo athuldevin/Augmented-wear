@@ -110,7 +110,6 @@ class ModernMenuLabel(ButtonBehavior, Label):
         else:
             self.siblings = 1
 
-
 class ModernMenu(Widget):
     radius = NumericProperty(50)
     circle_width = NumericProperty(5)
