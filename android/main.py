@@ -4,6 +4,7 @@ from album import Album,Folder
 from clock import MyClockWidget,Ticks
 from gallery import Pictures
 from paint import Painter
+from camera import Camera
 from copy import copy
 from kivy.app import App
 from kivy.clock import Clock
@@ -16,7 +17,10 @@ from kivy.animation import Animation
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.screenmanager import ScreenManager,Screen,FadeTransition
 from kivy.properties import NumericProperty, ListProperty, ObjectProperty, DictProperty
-
+import socket
+import datetime
+import random 
+import sys,os
 
 '''Window.borderless=1
 Window.left=100
@@ -221,6 +225,7 @@ Builder.load_file("kv/album.kv")
 Builder.load_file("kv/paint.kv")
 class ModernMenuApp(App):
     def build(self):
+        self.socketIP = '127.0.0.1'
         Config.set('input', 'default', 'tuio,127.0.0.1:3334')
         self.sm=ScreenManager(transition=FadeTransition())
         
@@ -230,13 +235,31 @@ class ModernMenuApp(App):
         self.sm.add_widget(Pictures(name='pictures'))
         self.sm.add_widget(Painter(name='paint'))
         self.sm.add_widget(Album(name='album'))
+        self.sm.add_widget(Camera(name='camera'))
         
         return self.sm
 
     def calculator(self, *args):
         args[0].parent.dismiss()
         self.sm.current="calculator"
-    
+
+    def camera(self, *args):
+        args[0].parent.dismiss()
+        #self.sm.current="camera"
+        s = socket.socket()
+        s.connect((self.socketIP,3335))
+        s.send ('hello'.encode())
+        curdir = os.path.dirname(__file__)
+        curdir=os.path.join(curdir, 'images/captures/')
+        print (curdir)
+        f = open(str(curdir)+'image'+ str(datetime.date.today())+str(random.randint(1, 100))+".png",'wb') # Open in binary
+        l = s.recv(1024)
+        while (l):
+            f.write(l)
+            l = s.recv(1024)
+        f.close()
+        s.close()
+        
     def paint(self, *args):
         args[0].parent.dismiss()
         self.sm.current="paint"

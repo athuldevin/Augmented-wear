@@ -48,7 +48,7 @@ def main():
 
     range_filter = 'HSV'
 
-    camera = cv2.VideoCapture(0)
+    camera = cv2.VideoCapture(1)
 
     setup_trackbars(range_filter)
 
@@ -63,6 +63,7 @@ def main():
                 frame_to_thresh = image.copy()
             else:
                 frame_to_thresh = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
         v1_min, v2_min, v3_min, v1_max, v2_max, v3_max = get_trackbar_values(range_filter)
 

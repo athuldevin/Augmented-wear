@@ -1,6 +1,9 @@
 import cv2
 import numpy as np
 from oscpy.client import OSCClient
+import socket
+import threading
+import time
 
 class cam():
 
@@ -8,103 +11,134 @@ class cam():
         print ("cam initialized")
         self.osc = OSCClient(ip, port)
         self.range_filter = 'HSV'
-        self.sequence_no=1
-        self.flag=True
+        self.capture = False
+        self.lock = threading.Lock()
         self.camera = cv2.VideoCapture(cam_num)
         ret, image = self.camera.read()
         if (not ret):
             print("cam error!")
             pass
         (self.height,self.width) = image.shape[:2]
-        if (cam_num==5):
-            self.flip=True
-            self.m1v1_min, self.m1v2_min, self.m1v3_min, self.m1v1_max, self.m1v2_max, self.m1v3_max = [155, 6, 0, 170, 255, 255]#[50, 20, 0, 70, 255, 255]
-            self.m2v1_min, self.m2v2_min, self.m2v3_min, self.m2v1_max, self.m2v2_max, self.m2v3_max = [50, 7, 0, 78, 255, 255]#[0, 5, 0, 10, 255, 255]
         
-        else:
-            self.flip=False
-            self.m1v1_min, self.m1v2_min, self.m1v3_min, self.m1v1_max, self.m1v2_max, self.m1v3_max = [1, 25, 0, 10, 255, 255]
-            self.m2v1_min, self.m2v2_min, self.m2v3_min, self.m2v1_max, self.m2v2_max, self.m2v3_max = [44, 10, 0, 66, 255, 255]
-        self.items = [[0,0]] #queue
+        #Markers
+        self.flip=True
+        self.m1 = [1, 25, 0, 10, 255, 255]
+        self.m2 = [44, 10, 0, 66, 255, 255]
+        self.m3 = [29, 100, 0, 50, 255, 255]
+        self.m4 = [157, 14, 0, 172, 255, 255]
+        self.items1 = [[0,0]] #queue1
+        self.items2 = [[0,0]] #queue2
+        self.seq1 = 2500 #sequence number1
+        self.seq2 = 1 #sequence number2
+        self.flag1, self.flag2 = False, False
 
-    def frame(self,*args):
-        
-        ret, image = self.camera.read()
-        if self.flip:
-            image = cv2.flip(image, 1)
-        frame_to_thresh = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        thresh = cv2.inRange(frame_to_thresh, (self.m1v1_min, self.m1v2_min, self.m1v3_min), (self.m1v1_max, self.m1v2_max, self.m1v3_max))
-        thresh2 = cv2.inRange(frame_to_thresh, (self.m2v1_min, self.m2v2_min, self.m2v3_min), (self.m2v1_max, self.m2v2_max, self.m2v3_max))
-        
+    def touch(self, image, seq, seq2, m1, m2, items, flag):
+        # Converting image between thresh hold values
+        thresh = cv2.inRange(image, (m1[0], m1[1], m1[2]), (m1[3], m1[4], m1[5]))
+        thresh2 = cv2.inRange(image, (m2[0], m2[1], m2[2]), (m2[3], m2[4], m2[5]))
+        #Creating mask by using 5 x 5 matrix, Perform advanced morphoogical transformation
         kernel = np.ones((5,5),np.uint8)
         mask = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
         mask2 = cv2.morphologyEx(thresh2, cv2.MORPH_OPEN, kernel)
-        # find contours in the mask and initialize the current
-        # (x, y) center of the ball
-        cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2]
-        cnts2 = cv2.findContours(mask2.copy(), cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)[-2]
-        center = None
-        
-        # only proceed if at least one contour was found
+        #find the countour in the mask 
+        cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+        cnts2 = cv2.findContours(mask2.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+        #proceed only if atleast one contour is found
         if len(cnts) > 0:
-            # find the largest contour in the mask, then use
-            # it to compute the minimum enclosing circle and
-            # centroid
-            c = max(cnts, key=cv2.contourArea)
+            #find largest countour in the mask
+            c = max(cnts, key = cv2.contourArea)
+            #assign center of max countour to center of marker
             ((self.x, self.y), radius) = cv2.minEnclosingCircle(c)
+            #proceed if second marker is found
             if len(cnts2) > 0:
-                cx = max(cnts2, key=cv2.contourArea)
-                ((x, y), radius2) = cv2.minEnclosingCircle(cx)
+                c2 = max(cnts2, key = cv2.contourArea)
+                ((x, y), radius2) = cv2.minEnclosingCircle(c2)
             else:
-                radius2=0
-            M = cv2.moments(c)
-            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+                radius2 = 0;
 
-            #Store recent points in queue for calculating click or not
-            if (len(self.items)<7):
-                self.enqueue([int(self.x),int(self.y)])
+            # Store x, y position in queue for reducing shake
+            if len(items) < 7:
+                items.insert(0,[self.x, self.y])
             else:
-                self.dequeue()
-                self.enqueue([int(self.x),int(self.y)])
+                items.pop()
+                items.insert(0,[self.x, self.y])
+            # Avarage point in queue
+            x1, y1 = self.avgPoint(items)
 
-            #Avarage points of queue
-            x1,y1=self.avgPoint()
-                   
-            # only proceed if the radius meets a minimum size
+            #only proceed if radius meets minimum size
             if radius > 25:
-                # draw the circle and centroid on the frame,
-                # then update the list of tracked points
-                
                 c1,c2=self.setCursorPos(int(x1),int(y1),int(self.x),int(self.y))
-                
                 if (len(cnts2)>0) and (radius2 > 25):
                     c1,c2 = c1/self.width , c2/self.height
-                    self.osc.send_message(b'/tuio/2Dcur',(b'alive',self.sequence_no))
-                    self.osc.send_message(b'/tuio/2Dcur',(b'set',self.sequence_no,c1,c2))
-                    self.flag=True
-                    print (self.sequence_no)
-                    
-
-                    
-                
+                    self.osc.send_message(b'/tuio/2Dcur',(b'alive',seq, seq2))
+                    self.osc.send_message(b'/tuio/2Dcur',(b'set',seq,c1,c2))
+                    flag=True
                 else:
-                    if self.flag:
-                        if (self.sequence_no<99999):
-                            self.sequence_no=self.sequence_no+1
+                    if flag:
+                        if (seq<99999):
+                            seq=seq+1
                         else:
-                            self.sequence_no=1
-                        print (self.sequence_no)
-                        self.flag=False
-                #cv2.circle(image, center, 3, (0, 0, 255), -1)
-                #cv2.putText(image,"centroid", (center[0]+10,center[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 255),1)
-                #cv2.putText(image,"("+str(center[0])+","+str(center[1])+")", (center[0]+10,center[1]+15), cv2.FONT_HERSHEY_SIMPLEX, 0.4,(0, 0, 255),1)
-        
-        # show the frame to our screen
-        #cv2.imshow("Original", image)
-        #cv2.imshow("Thresh", thresh)
-        #cv2.imshow("Mask", mask)
-    def dist(self,x1,y1,x2,y2):
-        return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
+                            seq=1
+                        print (seq)
+                        flag=False
+        return seq,items,flag
+    
+    def capture_pic(self,image):
+        while self.capture:
+            #going to detect is 4 markers present in image if not try another frame
+            kernel = np.ones((5,5),np.uint8)
+            thresh = cv2.inRange(image, (self.m1[0], self.m1[1], self.m1[2]), (self.m1[3], self.m1[4], self.m1[5]))
+            mask = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
+            cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+            if len(cnts) > 0:
+                c = max(cnts, key = cv2.contourArea)
+                ((self.x, self.y), radius) = cv2.minEnclosingCircle(c)
+                if radius > 25:
+                    thresh = cv2.inRange(image, (self.m2[0], self.m2[1], self.m2[2]), (self.m2[3], self.m2[4], self.m2[5]))
+                    mask = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
+                    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+                    if len(cnts) > 0:
+                        c = max(cnts, key = cv2.contourArea)
+                        ((self.x, self.y), radius) = cv2.minEnclosingCircle(c)
+                        if radius > 25:
+                            thresh = cv2.inRange(image, (self.m3[0], self.m3[1], self.m3[2]), (self.m3[3], self.m3[4], self.m3[5]))
+                            mask = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
+                            cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+                            if len(cnts) > 0:
+                                c = max(cnts, key = cv2.contourArea)
+                                ((self.x, self.y), radius) = cv2.minEnclosingCircle(c)
+                                if radius > 25:
+                                    thresh = cv2.inRange(image, (self.m4[0], self.m4[1], self.m4[2]), (self.m4[3], self.m4[4], self.m4[5]))
+                                    mask = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
+                                    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
+                                    if len(cnts) > 0:
+                                        c = max(cnts, key = cv2.contourArea)
+                                        ((self.x, self.y), radius) = cv2.minEnclosingCircle(c)
+                                        if radius > 25:
+                                                image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
+                                                cv2.imwrite("image.png", image)
+                                                self.capture = False
+                                                print("1 written!")
+            ret, image = self.camera.read()
+            if self.flip:
+                image = cv2.flip(image, 1)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    def frame(self,*args):
+        ret, image = self.camera.read()
+        if self.flip:
+            image = cv2.flip(image, 1)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+        self.seq1, self.items1, self.flag1 = self.touch(image, self.seq1, self.seq2, self.m1, self.m2, self.items1, self.flag1)
+        self.seq2, self.items2, self.flag2 = self.touch(image, self.seq2, self.seq1, self.m3, self.m4, self.items2, self.flag2)
+        if self.capture:
+            self.lock.acquire()
+            try:  
+                self.capture_pic(image) 
+            finally:
+                self.lock.release()
+
     def setCursorPos( self, pyp0,pyp1,yc0,yc1):
         yp=[0,0]
         if abs(yc0-pyp0)<5 and abs(yc1-pyp1)<5:
@@ -116,20 +150,44 @@ class cam():
         
         return yp[0],yp[1]
 
-    def enqueue(self, item):
-        self.items.insert(0,item)
-
-    def dequeue(self):
-        return self.items.pop()
-
-    def avgPoint(self):
+    def avgPoint(self,items):
         a,b=0,0
-        for x,y in self.items:
+        for x,y in items:
             a=a+x
             b=b+y
-        return a/len(self.items),b/len(self.items)
+        return a/len(items),b/len(items)
+    def cam_loop(self):
+        print('camera')
+        self.serverSocket = socket.socket()
+        port = 3335
+        self.serverSocket.bind(('', port))  
+        self.capture = False
+        while True:
+            self.serverSocket.listen(1)
+            self.client, addr = self.serverSocket.accept()
+            print (self.client.recv(1024).decode("ascii") ) 
+            self.capture = True
+            time.sleep(2)
+            self.lock.acquire()
+            self.lock.release()
+            f = open('image.png','rb') # Open in binary
+            l = f.read(1024)
+            while (l):
+                self.client.send(l)
+                l = f.read(1024)
+            f.close()
+            self.client.close()
+
+    def main_thread(self):
+        print ("main")
+        while True:
+            self.frame()
 
 if __name__ == '__main__':
-    a=cam(0,'192.168.43.8',3334)
-    while True:
-        a.frame()
+    a=cam(0,'127.0.0.1',3334)
+    t1 = threading.Thread(target=a.cam_loop)
+    t2 = threading.Thread(target=a.main_thread)
+    t1.start()
+    t2.start()
+    print("both started")
+    
