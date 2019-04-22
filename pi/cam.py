@@ -22,10 +22,10 @@ class cam():
         
         #Markers
         self.flip=True
-        self.m1 = [1, 25, 0, 10, 255, 255]
-        self.m2 = [44, 10, 0, 66, 255, 255]
-        self.m3 = [29, 100, 0, 50, 255, 255]
-        self.m4 = [157, 14, 0, 172, 255, 255]
+        self.m1 = [0, 112, 0, 5, 255, 255]
+        self.m2 = [30, 99, 0, 66, 255, 255]
+        self.m3 = [159, 129, 0, 180, 255, 255]
+        self.m4 = [121, 44, 0, 145, 255, 255]
         self.items1 = [[0,0]] #queue1
         self.items2 = [[0,0]] #queue2
         self.seq1 = 2500 #sequence number1
@@ -37,7 +37,7 @@ class cam():
         thresh = cv2.inRange(image, (m1[0], m1[1], m1[2]), (m1[3], m1[4], m1[5]))
         thresh2 = cv2.inRange(image, (m2[0], m2[1], m2[2]), (m2[3], m2[4], m2[5]))
         #Creating mask by using 5 x 5 matrix, Perform advanced morphoogical transformation
-        kernel = np.ones((5,5),np.uint8)
+        kernel = np.ones((10,10),np.uint8)
         mask = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
         mask2 = cv2.morphologyEx(thresh2, cv2.MORPH_OPEN, kernel)
         #find the countour in the mask 
@@ -66,7 +66,7 @@ class cam():
             x1, y1 = self.avgPoint(items)
 
             #only proceed if radius meets minimum size
-            if radius > 25:
+            if radius > 20:
                 c1,c2=self.setCursorPos(int(x1),int(y1),int(self.x),int(self.y))
                 if (len(cnts2)>0) and (radius2 > 25):
                     c1,c2 = c1/self.width , c2/self.height
@@ -93,7 +93,7 @@ class cam():
             if len(cnts) > 0:
                 c = max(cnts, key = cv2.contourArea)
                 ((self.x, self.y), radius) = cv2.minEnclosingCircle(c)
-                if radius > 25:
+                if radius > 20:
                     thresh = cv2.inRange(image, (self.m2[0], self.m2[1], self.m2[2]), (self.m2[3], self.m2[4], self.m2[5]))
                     mask = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
                     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
@@ -184,7 +184,7 @@ class cam():
             self.frame()
 
 if __name__ == '__main__':
-    a=cam(1,'127.0.0.1',3334)
+    a=cam(0,'192.168.43.60',3334)
     t1 = threading.Thread(target=a.cam_loop)
     t2 = threading.Thread(target=a.main_thread)
     t1.start()

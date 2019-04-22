@@ -92,7 +92,7 @@ class TouchtracerApp(App):
     icon = 'icon.png'
 
     def build(self):
-        Config.set('input', 'default', 'tuio,192.168.43.60:3334')
+        Config.set('input', 'default', 'tuio,192.168.43.94:3334')
         #TuioMotionEventProvider.start(TuioMotionEventProvider)
         return Touchtracer()
 

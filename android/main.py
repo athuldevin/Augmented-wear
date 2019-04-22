@@ -197,11 +197,12 @@ class MenuSpawner(Widget):
         return super(MenuSpawner, self).on_touch_down(touch, *args)
 
     def on_touch_move(self, touch, *args):
-        if (
-            touch.ud['menu_timeout'] and
-            dist(touch.pos, touch.opos) > self.cancel_distance
-        ):
-            Clock.unschedule(touch.ud['menu_timeout'])
+        try:
+            if (
+            touch.ud['menu_timeout'] and dist(touch.pos, touch.opos) > self.cancel_distance):
+                Clock.unschedule(touch.ud['menu_timeout'])
+        except Exception:
+            pass
         return super(MenuSpawner, self).on_touch_move(touch, *args)
 
     def on_touch_up(self, touch, *args):
@@ -225,8 +226,7 @@ Builder.load_file("kv/album.kv")
 Builder.load_file("kv/paint.kv")
 class ModernMenuApp(App):
     def build(self):
-        self.socketIP = '127.0.0.1'
-        Config.set('input', 'default', 'tuio,127.0.0.1:3334')
+        Config.set('input', 'default', 'tuio,192.168.43.94:3334')
         self.sm=ScreenManager(transition=FadeTransition())
         
         self.sm.add_widget(Home(name='home'))
@@ -245,20 +245,8 @@ class ModernMenuApp(App):
 
     def camera(self, *args):
         args[0].parent.dismiss()
-        #self.sm.current="camera"
-        s = socket.socket()
-        s.connect((self.socketIP,3335))
-        s.send ('hello'.encode())
-        curdir = os.path.dirname(__file__)
-        curdir=os.path.join(curdir, 'images/captures/')
-        print (curdir)
-        f = open(str(curdir)+'image'+ str(datetime.date.today())+str(random.randint(1, 100))+".png",'wb') # Open in binary
-        l = s.recv(1024)
-        while (l):
-            f.write(l)
-            l = s.recv(1024)
-        f.close()
-        s.close()
+        self.sm.current="camera"
+        
         
     def paint(self, *args):
         args[0].parent.dismiss()
