@@ -226,7 +226,7 @@ Builder.load_file("kv/album.kv")
 Builder.load_file("kv/paint.kv")
 class ModernMenuApp(App):
     def build(self):
-        Config.set('input', 'default', 'tuio,192.168.43.94:3334')
+        Config.set('input', 'default', 'tuio,192.168.43.224:3334')
         self.sm=ScreenManager(transition=FadeTransition())
         
         self.sm.add_widget(Home(name='home'))

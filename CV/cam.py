@@ -7,8 +7,9 @@ import time
 
 class cam():
 
-    def __init__(self,cam_num,ip,port):
+    def __init__(self,cam_num,ip,port,coordinates):
         print ("cam initialized")
+        self.x1,self.y1,self.x2,self.y2 = coordinates
         self.osc = OSCClient(ip, port)
         self.range_filter = 'HSV'
         self.capture = False
@@ -18,7 +19,7 @@ class cam():
         if (not ret):
             print("cam error!")
             pass
-        (self.height,self.width) = image.shape[:2]
+        self.width,self.height = self.x2-self.x1, self.y2-self.y1
         
         #Markers
         self.flip=True
@@ -49,38 +50,41 @@ class cam():
             c = max(cnts, key = cv2.contourArea)
             #assign center of max countour to center of marker
             ((self.x, self.y), radius) = cv2.minEnclosingCircle(c)
-            #proceed if second marker is found
-            if len(cnts2) > 0:
-                c2 = max(cnts2, key = cv2.contourArea)
-                ((x, y), radius2) = cv2.minEnclosingCircle(c2)
-            else:
-                radius2 = 0;
-
-            # Store x, y position in queue for reducing shake
-            if len(items) < 7:
-                items.insert(0,[self.x, self.y])
-            else:
-                items.pop()
-                items.insert(0,[self.x, self.y])
-            # Avarage point in queue
-            x1, y1 = self.avgPoint(items)
-
-            #only proceed if radius meets minimum size
-            if radius > 25:
-                c1,c2=self.setCursorPos(int(x1),int(y1),int(self.x),int(self.y))
-                if (len(cnts2)>0) and (radius2 > 25):
-                    c1,c2 = c1/self.width , c2/self.height
-                    self.osc.send_message(b'/tuio/2Dcur',(b'alive',seq, seq2))
-                    self.osc.send_message(b'/tuio/2Dcur',(b'set',seq,c1,c2))
-                    flag=True
+            # For cropping region of interest
+            if (self.x > self.x1 and self.x < self.x2 and self.y > self.y1 and self.y < self.y2):
+                self.x = self.x - self.x1
+                self.y = self.y - self.y1
+                #proceed if second marker is found
+                if len(cnts2) > 0:
+                    c2 = max(cnts2, key = cv2.contourArea)
+                    ((x, y), radius2) = cv2.minEnclosingCircle(c2)
                 else:
-                    if flag:
-                        if (seq<99999):
-                            seq=seq+1
-                        else:
-                            seq=1
-                        print (seq)
-                        flag=False
+                    radius2 = 0;
+                # Store x, y position in queue for reducing shake
+                if len(items) < 7:
+                    items.insert(0,[self.x, self.y])
+                else:
+                    items.pop()
+                    items.insert(0,[self.x, self.y])
+                # Avarage point in queue
+                x1, y1 = self.avgPoint(items)
+
+                #only proceed if radius meets minimum size
+                if radius > 25:
+                    c1,c2=self.setCursorPos(int(x1),int(y1),int(self.x),int(self.y))
+                    if (len(cnts2)>0) and (radius2 > 25):
+                        c1,c2 = c1/self.width , c2/self.height
+                        self.osc.send_message(b'/tuio/2Dcur',(b'alive',seq, seq2))
+                        self.osc.send_message(b'/tuio/2Dcur',(b'set',seq,c1,c2))
+                        flag=True
+                    else:
+                        if flag:
+                            if (seq<99999):
+                                seq=seq+1
+                            else:
+                                seq=1
+                            print (seq)
+                            flag=False
         return seq,items,flag
     
     def capture_pic(self,image):
@@ -184,7 +188,7 @@ class cam():
             self.frame()
 
 if __name__ == '__main__':
-    a=cam(1,'127.0.0.1',3334)
+    a=cam(1,'127.0.0.1',3334,[117,49,472,268])
     t1 = threading.Thread(target=a.cam_loop)
     t2 = threading.Thread(target=a.main_thread)
     t1.start()
