@@ -1,0 +1,16 @@
+<Button>:
+	color: [.31, .573, .816, .9]
+	background_color: [0, 0, 0, 1]
+	font_size:self.height/3
+	canvas.after:
+		Color:
+            rgba: (.31, .573, .816, .9)
+		Line:
+			rounded_rectangle:
+				( self.x, self.y, self.width,self.height,self.height/3)
+			width: 20
+<Calibrate>:
+	Button:
+		text:'AWT'
+		size:root.w,root.h
+		#on_release: root.switch()

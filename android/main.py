@@ -3,6 +3,7 @@ from kivy.config import Config
 from album import Album,Folder
 from clock import MyClockWidget,Ticks
 from gallery import Pictures
+from calibration import Calibrate
 from paint import Painter
 from camera import Camera
 from copy import copy
@@ -224,11 +225,13 @@ Builder.load_file("kv/calculator.kv")
 Builder.load_file("kv/gallery.kv")
 Builder.load_file("kv/album.kv")
 Builder.load_file("kv/paint.kv")
+Builder.load_file("kv/calibrate.kv")
+
 class ModernMenuApp(App):
     def build(self):
-        Config.set('input', 'default', 'tuio,192.168.43.224:3334')
+        Config.set('input', 'default', 'tuio,192.168.43.8:3334')
         self.sm=ScreenManager(transition=FadeTransition())
-        
+        self.sm.add_widget(Calibrate(name='calibrate'))
         self.sm.add_widget(Home(name='home'))
         self.sm.add_widget(CalculatorWidget(name='calculator'))
         self.sm.add_widget(MyClockWidget(name='clock'))
@@ -246,7 +249,10 @@ class ModernMenuApp(App):
     def camera(self, *args):
         args[0].parent.dismiss()
         self.sm.current="camera"
-        
+    
+    def calibrate(self, *args):
+        args[0].parent.dismiss()
+        self.sm.current="calibrate"    
         
     def paint(self, *args):
         args[0].parent.dismiss()

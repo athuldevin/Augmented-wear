@@ -8,7 +8,7 @@ class Camera(Screen):
         self.socketIP = '192.168.43.94'
         s = socket.socket()
         s.connect((self.socketIP,3335))
-        s.send ('hello'.encode())
+        s.send ('capture'.encode())
         curdir = os.path.dirname(__file__)
         curdir=os.path.join(curdir, 'images/captures/')
         print (curdir)
