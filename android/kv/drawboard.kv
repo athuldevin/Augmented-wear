@@ -2,7 +2,7 @@
 #:import kivy kivy
 #:import win kivy.core.window
 
-<Album>:
+<DrawBoard>:
 
     ScrollView:
         content: content
@@ -19,15 +19,18 @@
             size_hint_y:None
             #height: self.minimum_height
             Widget:
+                id:a
             Widget:
+                id:b
             Button:
+                id:c
                 size_hint: 1, None
                 size:100,75
                 font_size:40
                 text:"<<<"
                 on_release:root.manager.current='home'
-
-<Folder>:
+        
+<Fold>:
 
     # each time a picture is created, the image can delay the loading
     # as soon as the image is loaded, ensure that the center is changed

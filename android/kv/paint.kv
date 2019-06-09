@@ -2,19 +2,21 @@
 #:import win kivy.core.window
 
 <Painter>:
-    Draw:
-        Button:
-            size_hint: .4,.2
-            pos_hint:{"left":1, "top":1}
-            size:100,50
-            font_size:30
-            text:"Undo"
-            on_press:self.parent.undo()
+    id:frame
+    Button:
+        size_hint: .4,.2
+        id: te
+        pos_hint:{"left":1, "top":1}
+        size:200,100
+        font_size:30
+        text:"Undo"
+        on_press:self.parent.undo()
     Button:
         size_hint: .3,.2
+        id:test
         pos_hint:{"right":1, "top":1}
         size:100,50
         font_size:40
         text:"<<<"
-        on_release:root.manager.current='home'
+        on_release:self.parent.back()
     

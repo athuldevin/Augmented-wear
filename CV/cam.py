@@ -10,7 +10,6 @@ class cam():
     def __init__(self,cam_num,ip,port,coordinates):
         print ("cam initialized")
         self.x1,self.y1,self.x2,self.y2 = coordinates
-        self.calibrated = False
         self.osc = OSCClient(ip, port)
         self.range_filter = 'HSV'
         self.capture = False
@@ -23,58 +22,16 @@ class cam():
         self.width,self.height = self.x2-self.x1, self.y2-self.y1
         
         #Markers
-        self.flip=True
-        self.m1 = [1, 25, 0, 10, 255, 255]
-        self.m2 = [44, 10, 0, 66, 255, 255]
-        self.m3 = [29, 100, 0, 50, 255, 255]
-        self.m4 = [157, 14, 0, 172, 255, 255]
-        self.blue = [157, 14, 0, 172, 255, 255]
+        self.flip=False
+        self.m1 = [44, 99, 0, 84, 255, 255]
+        self.m2 = [0, 174, 0, 6, 255, 255]
+        self.m3 = [108, 44, 0, 137, 255, 255]
+        self.m4 = [0, 174, 0, 6, 255, 255]
         self.items1 = [[0,0]] #queue1
         self.items2 = [[0,0]] #queue2
         self.seq1 = 2500 #sequence number1
         self.seq2 = 1 #sequence number2
         self.flag1, self.flag2 = False, False
-
-    def calibration_bak(self, image, cal):
-        # Converting image between thresh hold values
-        thresh = cv2.inRange(image, (cal[0], cal[1], cal[2]), (cal[3], cal[4], cal[5]))
-        #Creating mask by using 5 x 5 matrix, Perform advanced morphoogical transformation
-        kernel = np.ones((5,5),np.uint8)
-        mask = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
-        #find the countour in the mask 
-        cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
-        #proceed only if atleast one contour is found
-        if len(cnts) > 0:
-            #find largest countour in the mask
-            c = max(cnts, key = cv2.contourArea)
-            #assign center of max countour to center of marker
-            ((self.x, self.y), radius) = cv2.minEnclosingCircle(c)  
-            return self.x,self.y
-        ret, image = self.camera.read()
-        if self.flip:
-            image = cv2.flip(image, 1)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        x,y,w,h = cv2.boundingRect(cnt)
-    
-    def calibration(self, image, cal):
-        # Converting image between thresh hold values
-        thresh = cv2.inRange(image, (cal[0], cal[1], cal[2]), (cal[3], cal[4], cal[5]))
-        #Creating mask by using 5 x 5 matrix, Perform advanced morphoogical transformation
-        kernel = np.ones((5,5),np.uint8)
-        mask = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
-        #find the countour in the mask 
-        cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
-        #proceed only if atleast one contour is found
-        if len(cnts) > 0:
-            #find largest countour in the mask
-            c = max(cnts, key = cv2.contourArea)
-            #find the bounding box of the countour area
-            x,y,w,h = cv2.boundingRect(cnts) 
-            return x,y,w,h
-        ret, image = self.camera.read()
-        if self.flip:
-            image = cv2.flip(image, 1)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     def touch(self, image, seq, seq2, m1, m2, items, flag):
         # Converting image between thresh hold values
@@ -113,9 +70,9 @@ class cam():
                 x1, y1 = self.avgPoint(items)
 
                 #only proceed if radius meets minimum size
-                if radius > 25:
+                if radius > 10:
                     c1,c2=self.setCursorPos(int(x1),int(y1),int(self.x),int(self.y))
-                    if (len(cnts2)>0) and (radius2 > 25):
+                    if (len(cnts2)>0) and (radius2 > 10):
                         c1,c2 = c1/self.width , c2/self.height
                         self.osc.send_message(b'/tuio/2Dcur',(b'alive',seq, seq2))
                         self.osc.send_message(b'/tuio/2Dcur',(b'set',seq,c1,c2))
@@ -140,28 +97,28 @@ class cam():
             if len(cnts) > 0:
                 c = max(cnts, key = cv2.contourArea)
                 ((self.x, self.y), radius) = cv2.minEnclosingCircle(c)
-                if radius > 25:
+                if radius > 10:
                     thresh = cv2.inRange(image, (self.m2[0], self.m2[1], self.m2[2]), (self.m2[3], self.m2[4], self.m2[5]))
                     mask = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
                     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
                     if len(cnts) > 0:
                         c = max(cnts, key = cv2.contourArea)
                         ((self.x, self.y), radius) = cv2.minEnclosingCircle(c)
-                        if radius > 25:
+                        if radius > 10:
                             thresh = cv2.inRange(image, (self.m3[0], self.m3[1], self.m3[2]), (self.m3[3], self.m3[4], self.m3[5]))
                             mask = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
                             cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
                             if len(cnts) > 0:
                                 c = max(cnts, key = cv2.contourArea)
                                 ((self.x, self.y), radius) = cv2.minEnclosingCircle(c)
-                                if radius > 25:
+                                if radius > 10:
                                     thresh = cv2.inRange(image, (self.m4[0], self.m4[1], self.m4[2]), (self.m4[3], self.m4[4], self.m4[5]))
                                     mask = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
                                     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
                                     if len(cnts) > 0:
                                         c = max(cnts, key = cv2.contourArea)
                                         ((self.x, self.y), radius) = cv2.minEnclosingCircle(c)
-                                        if radius > 25:
+                                        if radius > 10:
                                                 image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
                                                 cv2.imwrite("image.png", image)
                                                 self.capture = False
@@ -176,24 +133,15 @@ class cam():
         if self.flip:
             image = cv2.flip(image, 1)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        if self.calibrated:
+    
+        self.seq1, self.items1, self.flag1 = self.touch(image, self.seq1, self.seq2, self.m1, self.m2, self.items1, self.flag1)
+        self.seq2, self.items2, self.flag2 = self.touch(image, self.seq2, self.seq1, self.m3, self.m4, self.items2, self.flag2)
+        if self.capture:
             self.lock.acquire()
-            try:
-                self.x1,self.y1,self.x2,self.y2 = self.calibration (image, self.blue)
-                self.calibrated = False
+            try:  
+                self.capture_pic(image) 
             finally:
                 self.lock.release()
-            
-            
-        else:
-            self.seq1, self.items1, self.flag1 = self.touch(image, self.seq1, self.seq2, self.m1, self.m2, self.items1, self.flag1)
-            self.seq2, self.items2, self.flag2 = self.touch(image, self.seq2, self.seq1, self.m3, self.m4, self.items2, self.flag2)
-            if self.capture:
-                self.lock.acquire()
-                try:  
-                    self.capture_pic(image) 
-                finally:
-                    self.lock.release()
 
     def setCursorPos( self, pyp0,pyp1,yc0,yc1):
         yp=[0,0]
@@ -216,33 +164,25 @@ class cam():
         print('camera')
         self.serverSocket = socket.socket()
         port = 3335
-        calib, upload = False, False
         self.serverSocket.bind(('', port))  
         self.capture = False
         while True:
             self.serverSocket.listen(1)
             self.client, addr = self.serverSocket.accept()
             message = self.client.recv(1024).decode("ascii")
-            if message == "calibrate":
-                self.calibrated = True
-            elif message == "capture":
-                self.capture = True
-                upload = True
+            self.capture = True
             time.sleep(2)
             self.lock.acquire()
             self.lock.release()
-            if upload:
-                f = open('image.png','rb') # Open in binary
+            f = open('image.png','rb') # Open in binary
+            l = f.read(1024)
+            while (l):
+                self.client.send(l)
                 l = f.read(1024)
-                while (l):
-                    self.client.send(l)
-                    l = f.read(1024)
-                f.close()
-                self.client.close()
-                upload = False
-            elif self.calibrated == False:
-                self.client.send('step'.encode())
-                self.client.close()
+            f.close()
+            self.client.close()
+                
+            
 
     def main_thread(self):
         print ("main")
@@ -250,7 +190,7 @@ class cam():
             self.frame()
 
 if __name__ == '__main__':
-    a=cam(1,'127.0.0.1',3334,[117,49,472,268])
+    a=cam(0,'192.168.43.8',3334,[117,49,472,268])
     t1 = threading.Thread(target=a.cam_loop)
     t2 = threading.Thread(target=a.main_thread)
     t1.start()
