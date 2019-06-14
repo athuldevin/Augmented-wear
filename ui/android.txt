@@ -1,3 +1,0 @@
-title=ping_pong
-author=Athuldevin
-orientation=portrait

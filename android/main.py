@@ -229,7 +229,7 @@ Builder.load_file("kv/drawboard.kv")
 
 class ModernMenuApp(App):
     def build(self):
-        #Config.set('input', 'default', 'tuio,192.168.43.8:3334')
+        Config.set('input', 'default', 'tuio,192.168.43.8:3334')
         self.sm=ScreenManager(transition=FadeTransition())
         self.sm.add_widget(Home(name='home'))
         self.sm.add_widget(CalculatorWidget(name='calculator'))
